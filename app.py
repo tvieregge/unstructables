@@ -22,7 +22,7 @@ def get_articles(base_url):
         instruction_categories.append(link.get('href'))
 
     ## Search for individual instructions
-    test_topic = random.choice(instruction_categories)
+    test_topic = choice(instruction_categories)
     topic_page = requests.get(base_url + test_topic)
     soup2 = BeautifulSoup(topic_page.text, 'html.parser')
 
@@ -34,10 +34,10 @@ def get_articles(base_url):
     return article_list;
 
 def get_two_articles(articles):
-    article1 = articles.choice(articles)
+    article1 = choice(articles)
     articles.remove(article1)
-    article2 = articles.choice(articles)
-    return (articles1, articles2)
+    article2 = choice(articles)
+    return (article1, article2)
 
 def generate_html():
     base_url = 'https://www.instructables.com'
