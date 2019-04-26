@@ -9,8 +9,7 @@ app.config["DEBUG"] = True
 def home():
     return generate_html()
 
-def generate_html():
-    base_url = 'https://www.instructables.com'
+def get_pages(base_url):
     homepage = requests.get(base_url)
 
 
@@ -35,15 +34,16 @@ def generate_html():
         article_list.append(link.find('a').get('href'))
         # Randomize selection here?
 
-    test_article = article_list[0]
+    return article_list;
 
+def generate_html():
+    base_url = 'https://www.instructables.com'
+    test_article = get_pages(base_url)[0]
 
     # Get text from an individual article
     instruction_page = requests.get(base_url+test_article)
     instructable = BeautifulSoup(instruction_page.text, 'html.parser')
 
-
-    ##### 
     # Work with the test page.
     title = instructable.find('h1').text
 
@@ -56,7 +56,6 @@ def generate_html():
     for text in instructable.findAll(class_='step-body'):
         step_body.append(text.text)
 
-    
     return str(step_titles)
 
 
