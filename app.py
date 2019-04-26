@@ -1,6 +1,7 @@
 from flask import Flask
 import requests
 from bs4 import BeautifulSoup
+from random import choice
 
 app = Flask(__name__)
 app.config["DEBUG"] = True
@@ -9,9 +10,8 @@ app.config["DEBUG"] = True
 def home():
     return generate_html()
 
-def get_pages(base_url):
+def get_articles(base_url):
     homepage = requests.get(base_url)
-
 
     # Create a BeautifulSoup object
     soup = BeautifulSoup(homepage.text, 'html.parser')
@@ -21,24 +21,30 @@ def get_pages(base_url):
     for link in soup.find('div', {'id': "home-categories-menu"}):
         instruction_categories.append(link.get('href'))
 
-
     ## Search for individual instructions
     test_topic = instruction_categories[0]
     topic_page = requests.get(base_url + test_topic)
     soup2 = BeautifulSoup(topic_page.text, 'html.parser')
 
-
     article_list = list()
 
     for link in soup2.findAll(class_='title'):
         article_list.append(link.find('a').get('href'))
-        # Randomize selection here?
 
     return article_list;
 
+def get_two_articles(articles):
+    return (articles[0], articles[1])
+
 def generate_html():
     base_url = 'https://www.instructables.com'
-    test_article = get_pages(base_url)[0]
+
+    all_articles = get_articles(base_url)
+    if len(all_articles) < 2:
+        return "Not enough articles :("
+
+    test_article = all_articles[0]
+    article_pair = get_two_articles(all_articles)
 
     # Get text from an individual article
     instruction_page = requests.get(base_url+test_article)
