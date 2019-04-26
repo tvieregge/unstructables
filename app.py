@@ -39,18 +39,8 @@ def get_two_articles(articles):
     article2 = choice(articles)
     return (article1, article2)
 
-def generate_html():
-    base_url = 'https://www.instructables.com'
-
-    all_articles = get_articles(base_url)
-    if len(all_articles) < 2:
-        return "Not enough articles :("
-
-    test_article = all_articles[0]
-    article_pair = get_two_articles(all_articles)
-
-    # Get text from an individual article
-    instruction_page = requests.get(base_url+test_article)
+def parse_article(article):
+    instruction_page = requests.get(article)
     instructable = BeautifulSoup(instruction_page.text, 'html.parser')
 
     # Work with the test page.
@@ -61,9 +51,24 @@ def generate_html():
         step_titles.append(step.text)
 
 
-    step_body = list()
+    step_bodies = list()
     for text in instructable.findAll(class_='step-body'):
-        step_body.append(text.text)
+        step_bodies.append(text.text)
+
+    return (step_titles, step_bodies)
+
+
+def generate_html():
+    base_url = 'https://www.instructables.com'
+
+    all_articles = get_articles(base_url)
+    if len(all_articles) < 2:
+        return "Not enough articles :("
+
+    article_pair = get_two_articles(all_articles)
+
+    # Get text from an individual article
+    (step_titles, step_body) = parse_article(base_url+article_pair[0])
 
     return render_template('content.html', content=step_body)
 
