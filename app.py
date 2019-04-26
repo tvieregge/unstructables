@@ -34,7 +34,10 @@ def get_articles(base_url):
     return article_list;
 
 def get_two_articles(articles):
-    return (articles[0], articles[1])
+    article1 = articles.choice(articles)
+    articles.remove(article1)
+    article2 = articles.choice(articles)
+    return (articles1, articles2)
 
 def generate_html():
     base_url = 'https://www.instructables.com'
