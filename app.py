@@ -1,7 +1,7 @@
 from flask import Flask, render_template
 import requests
 from bs4 import BeautifulSoup
-from random import choice
+from random import choice, randint
 
 app = Flask(__name__)
 app.config["DEBUG"] = True
@@ -57,6 +57,27 @@ def parse_article(article):
 
     return (step_titles, step_bodies)
 
+def combine_lists(list1, list2):
+    if len(list1) > len(list2):
+        long = list1
+        short = list2
+    else:
+        short = list1
+        long = list2
+
+    ret_list = []
+    for e in zip(list1, list2):
+        pick = randint(0,1)
+        ret_list.append(e[pick])
+        print(pick)
+
+    return ret_list
+
+
+def combine_articles(article1, article2):
+    comb_titles = combine_lists(article1[0], article2[0])
+    comb_bodies = combine_lists(article1[1], article2[1])
+    return (comb_titles, comb_bodies)
 
 def generate_html():
     base_url = 'https://www.instructables.com'
@@ -68,9 +89,12 @@ def generate_html():
     article_pair = get_two_articles(all_articles)
 
     # Get text from an individual article
-    (step_titles, step_body) = parse_article(base_url+article_pair[0])
+    article1 = parse_article(base_url+article_pair[0])
+    article2 = parse_article(base_url+article_pair[1])
 
-    return render_template('content.html', content=step_body)
+    output_article = combine_articles(article1, article2)
+
+    return render_template('content.html', content=output_article[1])
 
 
 if __name__ == '__main__':
