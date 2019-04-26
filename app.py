@@ -1,6 +1,8 @@
-from flask import Flask
+from flask import Flask, render_template
 import requests
 from bs4 import BeautifulSoup
+import random
+
 
 app = Flask(__name__)
 app.config["DEBUG"] = True
@@ -24,7 +26,7 @@ def generate_html():
 
 
     ## Search for individual instructions
-    test_topic = instruction_categories[0]
+    test_topic = random.choice(instruction_categories)
     topic_page = requests.get(base_url + test_topic)
     soup2 = BeautifulSoup(topic_page.text, 'html.parser')
 
@@ -33,9 +35,8 @@ def generate_html():
 
     for link in soup2.findAll(class_='title'):
         article_list.append(link.find('a').get('href'))
-        # Randomize selection here?
 
-    test_article = article_list[0]
+    test_article = random.choice(article_list)
 
 
     # Get text from an individual article
@@ -57,7 +58,7 @@ def generate_html():
         step_body.append(text.text)
 
     
-    return str(step_titles)
+    return render_template('content.html', content=step_body)
 
 
 if __name__ == '__main__':

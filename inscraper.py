@@ -1,6 +1,7 @@
 # Import libraries
 import requests
 from bs4 import BeautifulSoup
+import random
 
 
 base_url = 'https://www.instructables.com'
@@ -48,6 +49,3 @@ for step in instructable.findAll(class_='step-title'):
 step_body = list()
 for text in instructable.findAll(class_='step-body'):
     step_body.append(text.text)
-
-
-print(step_body)
