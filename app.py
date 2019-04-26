@@ -82,7 +82,7 @@ def combine_lists(list1, list2):
 def combine_articles(article1, article2):
     comb_titles = combine_lists(article1.step_titles, article2.step_titles)
     comb_bodies = combine_lists(article1.step_bodies, article2.step_bodies)
-    return Article(article1.pagetitle, article1.intro, article1.author, article1.avatar, comb_bodies, comb_titles)
+    return Article(article2.pagetitle, article1.intro, article1.author, article1.avatar, comb_bodies, comb_titles)
 
 def generate_html():
     base_url = 'https://www.instructables.com'
