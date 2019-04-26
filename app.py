@@ -54,7 +54,12 @@ def generate_html():
     instructable = BeautifulSoup(instruction_page.text, 'html.parser')
 
     # Work with the test page.
-    title = instructable.find('h1').text
+    pagetitle = instructable.find('h1').text
+    intro_section = instructable.find('section',{'id':'intro'})
+
+    intro_p = intro_section.find('p').text
+    author = intro_section.find(class_="author").text
+    avatar = intro_section.find(class_="avatar").find('img')['src']
 
     step_titles = list()
     for step in instructable.findAll(class_='step-title'):
@@ -64,8 +69,11 @@ def generate_html():
     step_body = list()
     for text in instructable.findAll(class_='step-body'):
         step_body.append(text.text)
+    step_body.pop(0)
 
-    return render_template('content.html', content=step_body)
+    return render_template('content.html', 
+        pagetitle=pagetitle, intro=intro_p, author=author, avatar=avatar,
+        content=step_body, titles=step_titles)
 
 
 if __name__ == '__main__':
