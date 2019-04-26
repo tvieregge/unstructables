@@ -2,6 +2,9 @@ from flask import Flask, render_template
 import requests
 from bs4 import BeautifulSoup
 from random import choice, randint
+from collections import namedtuple
+
+Article = namedtuple('Article', 'pagetitle intro author avatar step_bodies step_titles')
 
 app = Flask(__name__)
 app.config["DEBUG"] = True
@@ -10,7 +13,7 @@ app.config["DEBUG"] = True
 def home():
     return generate_html()
 
-def get_articles(base_url):
+def get_pages(base_url):
     homepage = requests.get(base_url)
 
     # Create a BeautifulSoup object
@@ -33,18 +36,24 @@ def get_articles(base_url):
 
     return article_list;
 
-def get_two_articles(articles):
-    article1 = choice(articles)
-    articles.remove(article1)
-    article2 = choice(articles)
-    return (article1, article2)
+def get_two_pages(pages):
+    page1 = choice(pages)
+    pages.remove(page1)
+    page2 = choice(pages)
+    return (page1, page2)
 
 def parse_article(article):
     instruction_page = requests.get(article)
     instructable = BeautifulSoup(instruction_page.text, 'html.parser')
 
     # Work with the test page.
-    title = instructable.find('h1').text
+    pagetitle = instructable.find('h1').text
+    intro_section = instructable.find('section',{'id':'intro'})
+
+    print(article)
+    intro_p = intro_section.find('p').text
+    author = intro_section.find(class_="author").text
+    avatar = intro_section.find(class_="avatar").find('img')['src']
 
     step_titles = list()
     for step in instructable.findAll(class_='step-title'):
@@ -54,48 +63,49 @@ def parse_article(article):
     step_bodies = list()
     for text in instructable.findAll(class_='step-body'):
         step_bodies.append(text.text)
+    step_bodies.pop(0)
 
-    return (step_titles, step_bodies)
+    return Article(pagetitle, intro_p, author, avatar, step_bodies, step_titles)
+
 
 def combine_lists(list1, list2):
-    if len(list1) > len(list2):
-        long = list1
-        short = list2
-    else:
-        short = list1
-        long = list2
-
     ret_list = []
     for e in zip(list1, list2):
         pick = randint(0,1)
         ret_list.append(e[pick])
+        print("+++")
         print(pick)
 
     return ret_list
 
 
 def combine_articles(article1, article2):
-    comb_titles = combine_lists(article1[0], article2[0])
-    comb_bodies = combine_lists(article1[1], article2[1])
-    return (comb_titles, comb_bodies)
+    comb_titles = combine_lists(article1.step_bodies, article2.step_titles)
+    comb_bodies = combine_lists(article1.step_titles, article2.step_bodies)
+    return Article(article1.pagetitle, article1.intro, article1.author, article1.avatar, comb_bodies, comb_titles)
 
 def generate_html():
     base_url = 'https://www.instructables.com'
 
-    all_articles = get_articles(base_url)
-    if len(all_articles) < 2:
+    all_pages = get_pages(base_url)
+    if len(all_pages) < 2:
         return "Not enough articles :("
 
-    article_pair = get_two_articles(all_articles)
+    print("---------")
+    page_pair = get_two_pages(all_pages)
+    print(page_pair)
 
     # Get text from an individual article
-    article1 = parse_article(base_url+article_pair[0])
-    article2 = parse_article(base_url+article_pair[1])
+    article1 = parse_article(base_url+page_pair[0])
+    article2 = parse_article(base_url+page_pair[1])
 
     output_article = combine_articles(article1, article2)
+    print(output_article)
 
-    return render_template('content.html', content=output_article[1])
-
+    print("---------")
+    return render_template('content.html',
+        pagetitle=output_article.pagetitle, intro=output_article.intro, author=output_article.author, avatar=output_article.avatar,
+        content=output_article.step_bodies, titles=output_article.step_titles)
 
 if __name__ == '__main__':
     app.run(debug=True)
